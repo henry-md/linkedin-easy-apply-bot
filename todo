@@ -1,0 +1,5 @@
+
+Todo
+- Create function that takes stringified inputs and gets json output for each form element
+  - will there be a problem with labels being used for questions? Can probably solve this in prompt
+- Create function for executing the json output
