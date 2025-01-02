@@ -1,4 +1,4 @@
-from dotenv import load_dotenv
+from dotenv import load_dotenv # type: ignore
 import os
 import requests
 from openai import OpenAI
@@ -81,9 +81,12 @@ def get_claude_response(prompt):
             "role": "user",
             "content": prompt
         }],
-        "max_tokens": 300,
+        "max_tokens": 4096,
     }
 
     # Make API call
     response = requests.post("https://api.anthropic.com/v1/messages", headers=claude_headers, json=data)
+    res_obj = response.json()
+    if 'type' in res_obj and res_obj['type'] == 'error':
+        raise Exception('Error calling Claude API: ', res_obj['error']['message'])
     return response.json()['content'][0]['text']

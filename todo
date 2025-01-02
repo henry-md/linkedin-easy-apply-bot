@@ -1,5 +1,5 @@
 
 Todo
-- Create function that takes stringified inputs and gets json output for each form element
-  - will there be a problem with labels being used for questions? Can probably solve this in prompt
-- Create function for executing the json output
+- add a way to personalize prompt for experience, and ask it to take liberties
+- apply to more than 1 job
+- log the number of applications submitted by bot

@@ -46,17 +46,23 @@ class Helper:
     if parent is None:
       parent = self.driver
     element = self.el_slow(selector, parent)
+    if not element: raise Exception(f'Element not found, so can\'t click: {selector}')
     if driver is None:
       element.click()
     else:
       driver.execute_script("arguments[0].click();", element)
     self.logging.debug(f'Clicked')
 
-  def click(self, selector, parent=None):
+  def click(self, selector, parent=None, driver=None):
     self.logging.debug(f'Quick clicking: {selector}')
     if parent is None:
       parent = self.driver
-    self.el(selector, parent).click()
+    element = self.el(selector, parent)
+    if not element: raise Exception(f'Element not found, so can\'t click: {selector}')
+    if driver:
+      driver.execute_script("arguments[0].click();", element)
+    else:
+      element.click()
     self.logging.debug(f'Clicked')
 
   def type(self, selector, text, parent=None):
@@ -69,20 +75,25 @@ class Helper:
   def stringify_elements(self, res):
     element_text = []
     for i, element in enumerate(res):
-      curr_element_text = ''
+      # Handle warning messages
+      if element.tag_name == 'span' and element.get_attribute('class') == 'artdeco-inline-feedback__message':
+        element_text.append(f"Warning (element {i + 1}): {element.text}")
+        continue
+      
+      # Handle all other form elements
       type_str = f" (Type: {element.get_attribute('type')})" if element.tag_name == 'input' else ''
-      curr_element_text += f"Element {i + 1}: HTML Tag: {element.tag_name}{type_str}; "
+      curr_element_text = f"Element {i + 1}: HTML Tag: {element.tag_name}{type_str}; "
       # Check input and selection default value
       if element.tag_name == 'input' or element.tag_name == 'select':
         default_value = element.get_attribute('value')
-        curr_element_text += f"Default Value: {default_value if default_value else '[None]'}; "
+        curr_element_text += f"Default Value: '{default_value}'; "
       # Check label and span inner text
       if element.tag_name == 'label' or element.tag_name == 'span':
         try:
           child_span = element.find_element(By.CSS_SELECTOR, "span:not([class*='hidden'])")
-          curr_element_text += f"Inner Text: {child_span.text}; "
+          curr_element_text += f"Inner Text: '{child_span.text}'; "
         except:
-          curr_element_text += f"Inner Text: {element.text}; "
+          curr_element_text += f"Inner Text: '{element.text}'; "
       # Check selection options
       if element.tag_name == 'select':
         options = element.find_elements(By.TAG_NAME, 'option')
