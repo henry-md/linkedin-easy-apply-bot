@@ -60,9 +60,19 @@ class Helper:
     element = self.el(selector, parent)
     if not element: raise Exception(f'Element not found, so can\'t click: {selector}')
     if driver:
-      driver.execute_script("arguments[0].click();", element)
+        driver.execute_script("arguments[0].click();", element)
     else:
       element.click()
+    self.logging.debug(f'Clicked')
+
+  def click_js(self, element, driver):
+    self.logging.debug(f'Clicking: {element}')
+    driver.execute_script("""
+        arguments[0].scrollIntoView(); 
+        arguments[0].click();
+        arguments[0].dispatchEvent(new Event('change', { bubbles: true }));
+        arguments[0].dispatchEvent(new Event('input', { bubbles: true }));
+    """, element)
     self.logging.debug(f'Clicked')
 
   def type(self, selector, text, parent=None):
@@ -77,7 +87,7 @@ class Helper:
     for i, element in enumerate(res):
       # Handle warning messages
       if element.tag_name == 'span' and element.get_attribute('class') == 'artdeco-inline-feedback__message':
-        element_text.append(f"Warning (element {i + 1}): {element.text}")
+        element_text.append(f"REQUIREMENT FOR THE ABOVE^ (element {i + 1}): {element.text}")
         continue
       
       # Handle all other form elements
@@ -97,7 +107,7 @@ class Helper:
       # Check selection options
       if element.tag_name == 'select':
         options = element.find_elements(By.TAG_NAME, 'option')
-        curr_element_text += f"Options: {[opt.text for opt in options[:10]]}{' & other options...' if len(options) > 10 else ''}; "
+        curr_element_text += f"Options: {[opt.text for opt in options[:30]]}{' & other options...' if len(options) > 30 else ''}; "
       # Check if span or label is required
       if element.tag_name == 'span' or element.tag_name == 'label':
         parent = element.find_element(By.XPATH, './..')
